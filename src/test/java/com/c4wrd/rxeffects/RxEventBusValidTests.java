@@ -5,6 +5,8 @@ import io.reactivex.Observable;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class RxEventBusValidTests
 {
@@ -32,6 +34,36 @@ public class RxEventBusValidTests
         assertEquals(1, effects.eventCount);
         bus.dispatch(new UserLoginEvent());
         assertEquals(2, effects.eventCount);
+    }
+
+    @Test
+    public void testPayload() {
+
+        class PayloadEvent extends Event {
+            @Override
+            Object getPayload()
+            {
+                return "payload example!";
+            }
+        }
+
+        class exampleAllEffects {
+
+            @Effect
+            public void effect(Observable<Event> stream) {
+                stream.subscribe(e -> {
+                    if ( e instanceof PayloadEvent ) {
+                        assertEquals("payload example!", e.getPayload());
+                    }
+                });
+            }
+
+        }
+
+        RxEventBus bus = new RxEventBus();
+        bus.install(new exampleAllEffects());
+        bus.dispatch(new PayloadEvent());
+
     }
 
 }
